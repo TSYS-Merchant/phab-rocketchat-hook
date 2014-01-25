@@ -12,6 +12,7 @@ HIPCHAT_COLOR="${HIPCHAT_COLOR:-'yellow'}"
 NULLREV="0000000000000000000000000000000000000000"
 [[ "$NEWREV" == "$NULLREV" ]] && USER_REV="$OLDREV" || USER_REV="$NEWREV"
 USER=$($GIT_EXEC log -1 $USER_REV --format="%aN")
+USER_EMAIL=$($GIT_EXEC log -1 $USER_REV --format="%aE")
 BRANCH="${REFNAME#refs/heads/}"
 
 # Setup gitweb links
@@ -22,11 +23,16 @@ then
   REPO_LINK="<a href='http://$GITWEB/?p=$REPO;a=summary'>$REPO</a>"
 elif [[ -n "$CGIT" ]]
 then
-  USER_LINK=$USER
+  USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
   BRANCH_LINK="<a href='http://$CGIT/$REPO/log/?h=$REFNAME'>$BRANCH</a>"
   REPO_LINK="<a href='http://$CGIT/$REPO/'>$REPO</a>"
+elif [[ -n "$PHAB" ]]
+then
+  USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
+  BRANCH_LINK="<a href='https://$PHAB/diffusion/$REPO/browse/$BRANCH'>$BRANCH</a>"
+  REPO_LINK="<a href='https://$PHAB/diffusion/$REPO'>$REPO</a>"
 else
-  USER_LINK=$USER
+  USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
   BRANCH_LINK=$BRANCH
   REPO_LINK=$REPO
 fi
@@ -57,6 +63,9 @@ else
   elif [[ -n "$CGIT" ]]
   then
     FMT_STR="- %s (<a href='http://$CGIT/$REPO/commit/?id=%H'>%h</a>)"
+  elif [[ -n "$PHAB" ]]
+  then
+    FMT_STR="- %s (<a href='https://$PHAB/r$REPO%H'>%h</a>)"
   elif [ -n "$GITORIOUS" ]
   then
     FMT_STR="- %s (<a href='https://$GITORIOUS/$GIT_PROJECT/$REPO_NO_GIT/commit/%H'>%h</a>)"
@@ -77,4 +86,4 @@ else
 fi
 
 # Send it to HipChat
-echo -e "$MSG" | $HIPCHAT_SCRIPT -c "$HIPCHAT_COLOR" -t "$HIPCHAT_TOKEN" -r "$HIPCHAT_ROOM" -f "$HIPCHAT_FROM" > /dev/null
+echo -e "$MSG" | $HIPCHAT_SCRIPT > /dev/null
