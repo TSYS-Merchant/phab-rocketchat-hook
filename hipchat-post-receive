@@ -29,8 +29,8 @@ then
 elif [[ -n "$PHAB" ]]
 then
   USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
-  BRANCH_LINK="<a href='https://$PHAB/diffusion/$REPO/browse/$BRANCH/'>$BRANCH</a>"
-  REPO_LINK="<a href='https://$PHAB/diffusion/$REPO/'>$REPO</a>"
+  BRANCH_LINK="<a href='https://$PHAB/source/$REPO/browse/$BRANCH/'>$BRANCH</a>"
+  REPO_LINK="<a href='https://$PHAB/source/$REPO/'>$REPO</a>"
 else
   USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
   BRANCH_LINK=$BRANCH
