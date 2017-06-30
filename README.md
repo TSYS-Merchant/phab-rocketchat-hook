@@ -1,26 +1,14 @@
-# Git HipChat Hook
+# Git HipChat Hook for Phabricator
 
-A simple GIT `post-receive` hook script for notifying a room in HipChat. Adds additional support for Phabricator installs.
+A simple Git `post-receive` hook script for notifying a room in HipChat of Phabricator repository changes.
 
 ## Installation
 
-Clone this repository somewhere in your GIT repository host server.
-For example:
+1. Clone this repository somewhere on your repository host server.
+2. Clone [hipchat-cli](https://github.com/hipchat/hipchat-cli) somewhere on your repository host server.
+3. Go to the `hooks` directory in a repository you want to set up the hooks for and add a `post-receive` script like this one and make sure it's executable.
 
-```sh
-cd /home/git
-git clone git://github.com/imobile3/git-hipchat-hook.git
-```
-
-Clone [hipchat-cli](https://github.com/hipchat/hipchat-cli) somewhere in your GIT repository host server.
-
-```sh
-git clone git://github.com/hipchat/hipchat-cli.git
-```
-
-Go to the `hooks` directory in a repository you want to setup the hooks for and add a `post-receive` script like this one and make sure it's executable.
-
-You can lookup the HipChat room id from the [rooms/list](https://www.hipchat.com/docs/api/method/rooms/list) API or use the HipChat room name (remember to urlencode it)
+You can lookup the HipChat room ID from the [rooms/list](https://www.hipchat.com/docs/api/method/rooms/list) API or use the HipChat room name (remember to URL-encode it)
 
 ```sh
 #!/bin/sh
@@ -32,21 +20,15 @@ HIPCHAT_SCRIPT="/path/to/hipchat_room_message"
 
 And you're done!
 
-For Phabricator, GitWeb, CGit, Gitorious and Redmine integrations (optional) add the following configuration to the `post-receive` hook before the `hipchat-post-receive` source line.
-
-Note that Phabricator, CGit and GitWeb, and Redmine and JIRA, are mutually exclusive.
+For Phabricator, add the following configuration to the `post-receive` hook before the `hipchat-post-receive` source line.
 
 ```sh
-CGIT="git.example.com/cgit"
-GITWEB="gitweb.example.com"
-PHAB="phab.example.com"
-JIRA="jira.example.com"
-REDMINE="redmine.example.com"
-GITORIOUS="gitorious.example.com"
+export PHAB="phab.example.com"
+export REPO="RepoName"
 ```
 
-## Contributions
+Optionally, set a callsign if it differs from your repository name.
 
-* [graffic](http://github.com/graffic) for the sed RegEx to link to Redmine issues.
-* [jparise](http://github.com/jparise) for CGit and JIRA integrations.
-* [perl2ruby](http://github.com/perl2ruby) for Bash extensions.
+```sh
+export CALLSIGN="REPO"
+```

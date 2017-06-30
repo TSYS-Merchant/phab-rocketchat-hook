@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Read variables passed on by GIT
+# Read variables passed on by Git
 read OLDREV NEWREV REFNAME
 
-# Find out basic variables
 GIT_EXEC="${GIT_EXEC:-$(which git)}"
 REPO="${REPO:-$(basename $PWD)}"
+CALLSIGN="${CALLSIGN:-$REPO}"
 HIPCHAT_COLOR="${HIPCHAT_COLOR:-'yellow'}"
 
 # User is commiter of either last or first commit
@@ -15,36 +15,10 @@ USER=$($GIT_EXEC log -1 $USER_REV --format="%aN")
 USER_EMAIL=$($GIT_EXEC log -1 $USER_REV --format="%aE")
 BRANCH="${REFNAME#refs/heads/}"
 
-# Setup gitweb links
-if [[ -n "$GITWEB" ]]
-then
-  USER_LINK="<a href='http://$GITWEB/?p=$REPO;a=search;s=$USER;st=author'>$USER</a>"
-  BRANCH_LINK="<a href='http://$GITWEB/?p=$REPO;a=shortlog;h=$REFNAME'>$BRANCH</a>"
-  REPO_LINK="<a href='http://$GITWEB/?p=$REPO;a=summary'>$REPO</a>"
-elif [[ -n "$CGIT" ]]
-then
-  USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
-  BRANCH_LINK="<a href='http://$CGIT/$REPO/log/?h=$REFNAME'>$BRANCH</a>"
-  REPO_LINK="<a href='http://$CGIT/$REPO/'>$REPO</a>"
-elif [[ -n "$PHAB" ]]
-then
-  USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
-  BRANCH_LINK="<a href='https://$PHAB/source/$REPO/browse/$BRANCH/'>$BRANCH</a>"
-  REPO_LINK="<a href='https://$PHAB/source/$REPO/'>$REPO</a>"
-else
-  USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
-  BRANCH_LINK=$BRANCH
-  REPO_LINK=$REPO
-fi
-
-# Construct gitorious links
-if [[ -n "$GITORIOUS" ]]
-then
-  REPO_NO_GIT=$(echo -e $REPO|sed "s/.git//g")
-  USER_LINK="<a href='https://$GITORIOUS/~$USER'>$USER</a>"
-  REPO_LINK="<a href='https://$GITORIOUS/$GIT_PROJECT/$REPO_NO_GIT'>$REPO</a>"
-  BRANCH_LINK="<a href='https://$GITORIOUS/$GIT_PROJECT/$REPO_NO_GIT/commits/$BRANCH'>$BRANCH</a>"
-fi
+# Set up links
+USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
+BRANCH_LINK="<a href='https://$PHAB/source/$REPO/browse/$BRANCH/'>$BRANCH</a>"
+REPO_LINK="<a href='https://$PHAB/source/$REPO/'>$REPO</a>"
 
 # Construct message
 if [[ "$OLDREV" == "$NULLREV" ]]
@@ -57,33 +31,11 @@ then
   HIPCHAT_COLOR="red"
 else
   TITLE="$USER_LINK pushed to branch $BRANCH_LINK of $REPO_LINK"
-  if [[ -n "$GITWEB" ]]
-  then
-    FMT_STR="- %s (<a href='http://$GITWEB/?p=$REPO;a=commitdiff;h=%H'>%h</a>)"
-  elif [[ -n "$CGIT" ]]
-  then
-    FMT_STR="- %s (<a href='http://$CGIT/$REPO/commit/?id=%H'>%h</a>)"
-  elif [[ -n "$PHAB" ]]
-  then
-    FMT_STR="- %s (<a href='https://$PHAB/r$REPO%H'>%h</a>)"
-  elif [ -n "$GITORIOUS" ]
-  then
-    FMT_STR="- %s (<a href='https://$GITORIOUS/$GIT_PROJECT/$REPO_NO_GIT/commit/%H'>%h</a>)"
-  else
-    FMT_STR="- %s (%h)"
-  fi
+  FMT_STR="- %s (<a href='https://$PHAB/r$CALLSIGN%H'>%h</a>)"
 
   LOG=$($GIT_EXEC log $OLDREV..$NEWREV --format="$FMT_STR")
-
-  if [[ -n "$REDMINE" ]]
-  then
-    LOG=$(echo -e "$LOG" | sed "s|#\([0-9]*\)|#<a href='http://$REDMINE/issues/\1'>\1</a>|g")
-  elif [ -n "$JIRA" ]
-  then
-    LOG=$(echo -e "$LOG" | sed "s|\([A-Z]\{2,\}\-[0-9]\{1,\}\)|<a href='http://$JIRA/browse/\1'>\1</a>|g")
-  fi
   MSG="$TITLE\n$LOG"
 fi
 
-# Send it to HipChat
+# Send to HipChat
 echo -e "$MSG" | $HIPCHAT_SCRIPT > /dev/null
