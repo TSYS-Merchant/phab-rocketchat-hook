@@ -6,7 +6,6 @@ read OLDREV NEWREV REFNAME
 GIT_EXEC="${GIT_EXEC:-$(which git)}"
 REPO="${REPO:-$(basename $PWD)}"
 CALLSIGN="${CALLSIGN:-$REPO}"
-HIPCHAT_COLOR="${HIPCHAT_COLOR:-'yellow'}"
 
 # User is commiter of either last or first commit
 NULLREV="0000000000000000000000000000000000000000"
@@ -24,11 +23,9 @@ REPO_LINK="<a href='https://$PHAB/source/$REPO/'>$REPO</a>"
 if [[ "$OLDREV" == "$NULLREV" ]]
 then
   MSG="$USER_LINK created branch $BRANCH_LINK of $REPO_LINK"
-  HIPCHAT_COLOR="green"
 elif [[ "$NEWREV" == "$NULLREV" ]]
 then
   MSG="$USER_LINK deleted branch $BRANCH of $REPO_LINK"
-  HIPCHAT_COLOR="red"
 else
   TITLE="$USER_LINK pushed to branch $BRANCH_LINK of $REPO_LINK"
   FMT_STR="- %s (<a href='https://$PHAB/r$CALLSIGN%H'>%h</a>)"
@@ -37,5 +34,5 @@ else
   MSG="$TITLE\n$LOG"
 fi
 
-# Send to HipChat
-echo -e "$MSG" | $HIPCHAT_SCRIPT > /dev/null
+# Send to RocketChat incoming webhook
+curl -s -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$MSG\"\"channel\":\"$ROCKETCHAT_CHANNEL\"}" $ROCKETCHAT_WEBHOOK_URL > /dev/null
