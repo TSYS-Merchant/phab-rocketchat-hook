@@ -35,4 +35,4 @@ else
 fi
 
 # Send to RocketChat incoming webhook
-curl -s -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$MSG\"\"channel\":\"$ROCKETCHAT_CHANNEL\"}" $ROCKETCHAT_WEBHOOK_URL > /dev/null
+curl -s -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$MSG\", \"channel\":\"$ROCKETCHAT_CHANNEL\"}" $ROCKETCHAT_WEBHOOK_URL > /dev/null
