@@ -11,24 +11,22 @@ CALLSIGN="${CALLSIGN:-$REPO}"
 NULLREV="0000000000000000000000000000000000000000"
 [[ "$NEWREV" == "$NULLREV" ]] && USER_REV="$OLDREV" || USER_REV="$NEWREV"
 USER=$($GIT_EXEC log -1 $USER_REV --format="%aN")
-USER_EMAIL=$($GIT_EXEC log -1 $USER_REV --format="%aE")
 BRANCH="${REFNAME#refs/heads/}"
 
 # Set up links
-USER_LINK="<a href='mailto:$USER_EMAIL'>$USER</a>"
-BRANCH_LINK="<a href='https://$PHAB/source/$REPO/browse/$BRANCH/'>$BRANCH</a>"
-REPO_LINK="<a href='https://$PHAB/source/$REPO/'>$REPO</a>"
+BRANCH_LINK="[$BRANCH](https://$PHAB/source/$REPO/browse/$BRANCH/)"
+REPO_LINK="[$REPO](https://$PHAB/source/$REPO/)"
 
 # Construct message
 if [[ "$OLDREV" == "$NULLREV" ]]
 then
-  MSG="$USER_LINK created branch $BRANCH_LINK of $REPO_LINK"
+  MSG="$USER created branch $BRANCH_LINK of $REPO_LINK"
 elif [[ "$NEWREV" == "$NULLREV" ]]
 then
-  MSG="$USER_LINK deleted branch $BRANCH of $REPO_LINK"
+  MSG="$USER deleted branch $BRANCH of $REPO_LINK"
 else
-  TITLE="$USER_LINK pushed to branch $BRANCH_LINK of $REPO_LINK"
-  FMT_STR="- %s (<a href='https://$PHAB/r$CALLSIGN%H'>%h</a>)"
+  TITLE="$USER pushed to branch $BRANCH_LINK of $REPO_LINK"
+  FMT_STR="- %s ([%h](https://$PHAB/r$CALLSIGN%H))"
 
   LOG=$($GIT_EXEC log $OLDREV..$NEWREV --format="$FMT_STR")
   MSG="$TITLE\n$LOG"
