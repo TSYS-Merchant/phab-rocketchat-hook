@@ -21,16 +21,22 @@ REPO_LINK="[$REPO](https://$PHAB/source/$REPO/)"
 if [[ "$OLDREV" == "$NULLREV" ]]
 then
   MSG="$USER created branch $BRANCH_LINK of $REPO_LINK"
+  ATTACHMENTS="[]"
 elif [[ "$NEWREV" == "$NULLREV" ]]
 then
   MSG="$USER deleted branch $BRANCH of $REPO_LINK"
+  ATTACHMENTS="[]"
 else
-  TITLE="$USER pushed to branch $BRANCH_LINK of $REPO_LINK"
-  FMT_STR="- %s ([%h](https://$PHAB/r$CALLSIGN%H))"
+  MSG="$USER pushed to branch $BRANCH_LINK of $REPO_LINK"
 
-  LOG=$($GIT_EXEC log $OLDREV..$NEWREV --format="$FMT_STR")
-  MSG="$TITLE\n$LOG"
+  ATTACHMENTS=$($GIT_EXEC log $OLDREV..$NEWREV \
+    --pretty=format:"{\"text\":\"%s ([%h](https://$PHAB/r$CALLSIGN%H))\"}," $@ \
+    | perl -pe 'BEGIN{print "["}; END{print "]"}' \
+    | perl -pe 's/},]/}]/')
 fi
 
+BODY="{\"text\":\"$MSG\",\"channel\":\"$ROCKETCHAT_CHANNEL\",\"attachments\": $ATTACHMENTS}"
+
 # Send to RocketChat incoming webhook
-curl -s -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$MSG\", \"channel\":\"$ROCKETCHAT_CHANNEL\"}" $ROCKETCHAT_WEBHOOK_URL > /dev/null
+curl -s -X POST -H 'Content-Type: application/json' -d "$BODY" \
+  $ROCKETCHAT_WEBHOOK_URL > /dev/null
